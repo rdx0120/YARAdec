@@ -1,4 +1,4 @@
-# YaraDec #
+# YARAdec #
 
 yaradec is a simple yara-rules "decompiler"
 
