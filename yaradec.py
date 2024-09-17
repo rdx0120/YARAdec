@@ -193,6 +193,7 @@
         
         else:
             next = [ip + 1]
+       
         # Saving opcode & args > self.code
         data = dict(next=next, opcode=opcode, args=args)
         self.code[ip] = data
