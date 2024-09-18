@@ -1,14 +1,13 @@
-# Use enum.py from python 3.6
-from enum import IntEnum, IntFlag
+# # Use enum.py from python 3.6
+# from enum import IntEnum, IntFlag
 
-# Constants extracted from libyara/include/types.h   (github.com/VirusTotal/yara)
+# # Constants extracted from libyara/include/types.h   (github.com/VirusTotal/yara)
 
-UNDEFINED = 0xFFFABADAFABADAFF
+# UNDEFINED = 0xFFFABADAFABADAFF
 
 
-def IS_UNDEFINED(X):
-    return X == UNDEFINED
-
+# def IS_UNDEFINED(X):
+#     return X == UNDEFINED
 
 _OP_EQ = 0
 _OP_NEQ = 1
@@ -80,6 +79,7 @@ class Opcode(IntEnum):
     OP_JFALSE = 44
     OP_JTRUE = 45
 
+    # Integer Opcodes
     OP_INT_EQ = (OP_INT_BEGIN + _OP_EQ)
     OP_INT_NEQ = (OP_INT_BEGIN + _OP_NEQ)
     OP_INT_LT = (OP_INT_BEGIN + _OP_LT)
@@ -92,6 +92,7 @@ class Opcode(IntEnum):
     OP_INT_DIV = (OP_INT_BEGIN + _OP_DIV)
     OP_INT_MINUS = (OP_INT_BEGIN + _OP_MINUS)
 
+    # Double Opcodes
     OP_DBL_EQ = (OP_DBL_BEGIN + _OP_EQ)
     OP_DBL_NEQ = (OP_DBL_BEGIN + _OP_NEQ)
     OP_DBL_LT = (OP_DBL_BEGIN + _OP_LT)
@@ -104,6 +105,7 @@ class Opcode(IntEnum):
     OP_DBL_DIV = (OP_DBL_BEGIN + _OP_DIV)
     OP_DBL_MINUS = (OP_DBL_BEGIN + _OP_MINUS)
 
+    # String Opcodes
     OP_STR_EQ = (OP_STR_BEGIN + _OP_EQ)
     OP_STR_NEQ = (OP_STR_BEGIN + _OP_NEQ)
     OP_STR_LT = (OP_STR_BEGIN + _OP_LT)
