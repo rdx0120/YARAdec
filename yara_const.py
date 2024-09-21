@@ -5,7 +5,6 @@ from enum import IntEnum, IntFlag
 
 UNDEFINED = 0xFFFABADAFABADAFF
 
-
 def IS_UNDEFINED(X):
     return X == UNDEFINED
 
