@@ -123,81 +123,87 @@
 #         return True
 
     def get_code(self, buf, ip):
-        if self.code.get(ip):
-            return []
+    if self.code.get(ip):
+        return []
 
-        opcode = Opcode(unpack2(buf, ip, '<B')[0])
-        args = []
+    opcode = Opcode(unpack2(buf, ip, '<B')[0])
+    args = []
 
-        if opcode == Opcode.OP_HALT:
-            next = []
-        # Memory Operation Handling
-        elif opcode in [
-            Opcode.OP_CLEAR_M,
-            Opcode.OP_ADD_M,
-            Opcode.OP_INCR_M,
-            Opcode.OP_PUSH_M,
-            Opcode.OP_POP_M,
-            Opcode.OP_SWAPUNDEF,
-            Opcode.OP_INIT_RULE,
-            Opcode.OP_PUSH_RULE,
-            Opcode.OP_MATCH_RULE,
-            Opcode.OP_OBJ_LOAD,
-            Opcode.OP_OBJ_FIELD,
-            Opcode.OP_CALL,
-            Opcode.OP_IMPORT,
-            Opcode.OP_INT_TO_DBL,
-        ]:
-            args.append(unpack2(buf, ip + 1, '<Q')[0])
-            next = [ip + 8 + 1]
-        elif opcode in [
-            Opcode.OP_JNUNDEF,
-            Opcode.OP_JLE,
-            Opcode.OP_JTRUE,
-            Opcode.OP_JFALSE,
-        ]:
-            next = [unpack2(buf, ip + 1, '<Q')[0], ip + 8]
-        # Integer Operation Handling
-        elif opcode == Opcode.OP_PUSH:
-            arg = unpack2(buf, ip + 1, '<Q')[0]
-            try:
-                string = self.get_string(arg)
-                if string:
-                    args.append(string)
-                else:
-                    args.append(arg)
-            except struct.error as exc:
+    # halting opcode
+    if opcode == Opcode.OP_HALT:
+        next = []
+    
+    # memory operations handling
+    elif opcode in [
+        Opcode.OP_CLEAR_M,
+        Opcode.OP_ADD_M,
+        Opcode.OP_INCR_M,
+        Opcode.OP_PUSH_M,
+        Opcode.OP_POP_M,
+        Opcode.OP_SWAPUNDEF,
+        Opcode.OP_INIT_RULE,
+        Opcode.OP_PUSH_RULE,
+        Opcode.OP_MATCH_RULE,
+        Opcode.OP_OBJ_LOAD,
+        Opcode.OP_OBJ_FIELD,
+        Opcode.OP_CALL,
+        Opcode.OP_IMPORT,
+        Opcode.OP_INT_TO_DBL,
+    ]:
+        args.append(unpack2(buf, ip + 1, '<Q')[0])  # unpacking 8 byte integer
+        next = [ip + 8 + 1]
+
+    # handling the jump operations
+    elif opcode in [
+        Opcode.OP_JNUNDEF,
+        Opcode.OP_JLE,
+        Opcode.OP_JTRUE,
+        Opcode.OP_JFALSE,
+    ]:
+        next = [unpack2(buf, ip + 1, '<Q')[0], ip + 8]
+
+    # PUSH operation
+    elif opcode == Opcode.OP_PUSH:
+        arg = unpack2(buf, ip + 1, '<Q')[0]
+        try:
+            string = self.get_string(arg)
+            if string:
+                args.append(string)
+            else:
                 args.append(arg)
-            next = [ip + 8 + 1]
-        
-        # New Integer Opcode Handling
-        elif opcode == Opcode.OP_INT_EQ or opcode == Opcode.OP_INT_NEQ:
-            args.append(unpack2(buf, ip + 1, '<Q')[0])  # Handle integer comparison
-            next = [ip + 8 + 1]
-        elif opcode == Opcode.OP_INT_ADD or opcode == Opcode.OP_INT_SUB:
-            args.append(unpack2(buf, ip + 1, '<Q')[0])  # Handle integer arithmetic
-            next = [ip + 8 + 1]
-        
-        # New Double Opcode Handling
-        elif opcode == Opcode.OP_DBL_EQ or opcode == Opcode.OP_DBL_NEQ:
-            args.append(unpack2(buf, ip + 1, '<d')[0])  # Handle double comparison
-            next = [ip + 8 + 1]
-        elif opcode == Opcode.OP_DBL_ADD or opcode == Opcode.OP_DBL_SUB:
-            args.append(unpack2(buf, ip + 1, '<d')[0])  # Handle double arithmetic
-            next = [ip + 8 + 1]
-        
-        # New String Opcode Handling
-        elif opcode == Opcode.OP_STR_EQ or opcode == Opcode.OP_STR_NEQ:
-            args.append(unpack2(buf, ip + 1, '<Q')[0])  # Handle string comparison
-            next = [ip + 8 + 1]
-        
-        else:
-            next = [ip + 1]
-       
-        # Saving opcode & args > self.code
-        data = dict(next=next, opcode=opcode, args=args)
-        self.code[ip] = data
-        return next
+        except struct.error as exc:
+            args.append(arg)
+        next = [ip + 8 + 1]
+
+    # new integer opcode handling 
+    elif opcode in [Opcode.OP_INT_EQ, Opcode.OP_INT_NEQ, Opcode.OP_INT_LT, Opcode.OP_INT_GT, Opcode.OP_INT_LE, Opcode.OP_INT_GE]:
+        args.append(unpack2(buf, ip + 1, '<Q')[0])  # Unpacking for comparison
+        next = [ip + 8 + 1]
+    
+    elif opcode in [Opcode.OP_INT_ADD, Opcode.OP_INT_SUB, Opcode.OP_INT_MUL, Opcode.OP_INT_DIV]:
+        args.append(unpack2(buf, ip + 1, '<Q')[0])  # Unpacking for arithmetic
+        next = [ip + 8 + 1]
+
+    # New Double Opcode 
+    elif opcode in [Opcode.OP_DBL_EQ, Opcode.OP_DBL_NEQ, Opcode.OP_DBL_LT, Opcode.OP_DBL_GT, Opcode.OP_DBL_LE, Opcode.OP_DBL_GE]:
+        args.append(unpack2(buf, ip + 1, '<d')[0])  
+        next = [ip + 8 + 1]
+
+    elif opcode in [Opcode.OP_DBL_ADD, Opcode.OP_DBL_SUB, Opcode.OP_DBL_MUL, Opcode.OP_DBL_DIV]:
+        args.append(unpack2(buf, ip + 1, '<d')[0])  
+        next = [ip + 8 + 1]
+
+    # New String Opcode 
+    elif opcode in [Opcode.OP_STR_EQ, Opcode.OP_STR_NEQ, Opcode.OP_STR_LT, Opcode.OP_STR_GT, Opcode.OP_STR_LE, Opcode.OP_STR_GE]:
+        args.append(unpack2(buf, ip + 1, '<Q')[0])  
+        next = [ip + 8 + 1]
+
+    else:
+        next = [ip + 1]
+
+    data = dict(next=next, opcode=opcode, args=args)
+    self.code[ip] = data
+    return next
         
 #     def get_raw_str(self, addr):
 #         if not addr:
