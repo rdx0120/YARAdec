@@ -105,7 +105,7 @@ class Opcode(IntEnum):
     OP_DBL_DIV = (OP_DBL_BEGIN + _OP_DIV)
     OP_DBL_MINUS = (OP_DBL_BEGIN + _OP_MINUS)
 
-    # String Opcodes
+    # New String Opcodes
     OP_STR_EQ = (OP_STR_BEGIN + _OP_EQ)
     OP_STR_NEQ = (OP_STR_BEGIN + _OP_NEQ)
     OP_STR_LT = (OP_STR_BEGIN + _OP_LT)
@@ -154,7 +154,7 @@ class StrFlag(IntFlag):
     ASCII = 0x08
     WIDE = 0x10
     REGEXP = 0x20
-    FAST_HEX_REGEXP = 0x40
+    FAST_HEX_REGEXP = 0x40    #New
     FULL_WORD = 0x80
     ANONYMOUS = 0x100
     SINGLE_MATCH = 0x200
