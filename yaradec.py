@@ -123,8 +123,8 @@ class YaraDec_v11(object):
         return True
 
     def get_code(self, buf, ip):
-    if self.code.get(ip):
-        return []
+        if self.code.get(ip):
+            return []
 
     opcode = Opcode(unpack2(buf, ip, '<B')[0])
     args = []
@@ -182,15 +182,6 @@ class YaraDec_v11(object):
     
     elif opcode in [Opcode.OP_INT_ADD, Opcode.OP_INT_SUB, Opcode.OP_INT_MUL, Opcode.OP_INT_DIV]:
         args.append(unpack2(buf, ip + 1, '<Q')[0])  # Unpacking for arithmetic
-        next = [ip + 8 + 1]
-
-    # New Double Opcode 
-    elif opcode in [Opcode.OP_DBL_EQ, Opcode.OP_DBL_NEQ, Opcode.OP_DBL_LT, Opcode.OP_DBL_GT, Opcode.OP_DBL_LE, Opcode.OP_DBL_GE]:
-        args.append(unpack2(buf, ip + 1, '<d')[0])  
-        next = [ip + 8 + 1]
-
-    elif opcode in [Opcode.OP_DBL_ADD, Opcode.OP_DBL_SUB, Opcode.OP_DBL_MUL, Opcode.OP_DBL_DIV]:
-        args.append(unpack2(buf, ip + 1, '<d')[0])  
         next = [ip + 8 + 1]
 
     # New String Opcode 
