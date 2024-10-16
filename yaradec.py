@@ -35,6 +35,7 @@ class YaraRule(object):
         if self.data['flags'] & RuleFlag.PRIVATE:
             out += 'private '
         out += 'rule {ns}{identifier} {{\n'.format(**self.data)
+        
         if self.data.get('metadata'):
             out += '\tmeta:\n'
             for name, val in self.data['metadata'].items():
@@ -70,6 +71,11 @@ class YaraRule(object):
                 if string['flags'] & StrFlag.REGEXP:
                     out += ' regex'
                 out += '\n'
+
+        if 'externals' in self.data:
+            out += '\n externals:\n'
+            for ext_var, ext_value in self.data['externals'].items():
+                out += f'    {ext_var} = {ext_value}\n'
 
         out += '\t__yaradec_asm__:\n'
         for val in self.data.get('code', []):
@@ -152,17 +158,11 @@ class YaraDec_v11(object):
     ]:
         args.append(unpack2(buf, ip + 1, '<Q')[0])  # unpacking 8 byte integer
         next = [ip + 8 + 1]
-
-    # handling the jump operations
-    elif opcode in [
-        Opcode.OP_JNUNDEF,
-        Opcode.OP_JLE,
-        Opcode.OP_JTRUE,
-        Opcode.OP_JFALSE,
-    ]:
-        next = [unpack2(buf, ip + 1, '<Q')[0], ip + 8]
-
-    # PUSH operation
+        
+## Handling both jump location and next instruction
+    elif opcode in [Opcode.OP_JNUNDEF, Opcode.OP_JLE, Opcode.OP_JTRUE, Opcode.OP_JFALSE]:
+        next = [unpack2(buf, ip + 1, '<Q')[0], ip + 8]  
+        
     elif opcode == Opcode.OP_PUSH:
         arg = unpack2(buf, ip + 1, '<Q')[0]
         try:
@@ -174,21 +174,6 @@ class YaraDec_v11(object):
         except struct.error as exc:
             args.append(arg)
         next = [ip + 8 + 1]
-
-    # new integer opcode handling 
-    elif opcode in [Opcode.OP_INT_EQ, Opcode.OP_INT_NEQ, Opcode.OP_INT_LT, Opcode.OP_INT_GT, Opcode.OP_INT_LE, Opcode.OP_INT_GE]:
-        args.append(unpack2(buf, ip + 1, '<Q')[0])  # Unpacking for comparison
-        next = [ip + 8 + 1]
-    
-    elif opcode in [Opcode.OP_INT_ADD, Opcode.OP_INT_SUB, Opcode.OP_INT_MUL, Opcode.OP_INT_DIV]:
-        args.append(unpack2(buf, ip + 1, '<Q')[0])  # Unpacking for arithmetic
-        next = [ip + 8 + 1]
-
-    # New String Opcode 
-    elif opcode in [Opcode.OP_STR_EQ, Opcode.OP_STR_NEQ, Opcode.OP_STR_LT, Opcode.OP_STR_GT, Opcode.OP_STR_LE, Opcode.OP_STR_GE]:
-        args.append(unpack2(buf, ip + 1, '<Q')[0])  
-        next = [ip + 8 + 1]
-
     else:
         next = [ip + 1]
 
@@ -254,9 +239,12 @@ class YaraDec_v11(object):
             data['str'] = '{' + ' '.join(['{:X}'.format(x) for x in str_str]) + '}'
         elif flags & StrFlag.LITERAL:
             data['str'] = str_str.decode('utf-8')
-        else:
+        
+        elif flags & StrFlag.REGEXP:
+            data['str'] = str_str.decode('utf-8') + ' (regex)'
+        else
             data['str'] = None
-
+            
         return data
 
     def get_rule(self, addr):
