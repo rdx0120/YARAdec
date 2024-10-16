@@ -242,7 +242,7 @@ class YaraDec_v11(object):
         
         elif flags & StrFlag.REGEXP:
             data['str'] = str_str.decode('utf-8') + ' (regex)'
-        else
+        else:
             data['str'] = None
             
         return data
