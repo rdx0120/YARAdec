@@ -179,7 +179,7 @@ class YaraDec_v11(object):
 
     data = dict(next=next, opcode=opcode, args=args)
     self.code[ip] = data
-    return next
+        return next
         
     def get_raw_str(self, addr):
         if not addr:
