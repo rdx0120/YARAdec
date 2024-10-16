@@ -78,6 +78,9 @@ class Opcode(IntEnum):
     OP_JFALSE = 44
     OP_JTRUE = 45
 
+    OP_NEW_OPCODE_X = 46
+    OP_NEW_OPCODE_Y = 47
+
     # Integer Opcodes
     OP_INT_EQ = (OP_INT_BEGIN + _OP_EQ)
     OP_INT_NEQ = (OP_INT_BEGIN + _OP_NEQ)
@@ -164,6 +167,7 @@ class StrFlag(IntFlag):
     CHAIN_TAIL = 0x4000
     FIXED_OFFSET = 0x8000
     GREEDY_REGEXP = 0x10000
+    NEW_STRING_FLAG = 0x20000
 
 
 class RuleFlag(IntFlag):
