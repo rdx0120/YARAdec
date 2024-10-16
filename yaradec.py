@@ -132,53 +132,53 @@ class YaraDec_v11(object):
         if self.code.get(ip):
             return []
 
-    opcode = Opcode(unpack2(buf, ip, '<B')[0])
-    args = []
+        opcode = Opcode(unpack2(buf, ip, '<B')[0])
+        args = []
 
-    # halting opcode
-    if opcode == Opcode.OP_HALT:
-        next = []
+        # halting opcode
+        if opcode == Opcode.OP_HALT:
+            next = []
     
-    # memory operations handling
-    elif opcode in [
-        Opcode.OP_CLEAR_M,
-        Opcode.OP_ADD_M,
-        Opcode.OP_INCR_M,
-        Opcode.OP_PUSH_M,
-        Opcode.OP_POP_M,
-        Opcode.OP_SWAPUNDEF,
-        Opcode.OP_INIT_RULE,
-        Opcode.OP_PUSH_RULE,
-        Opcode.OP_MATCH_RULE,
-        Opcode.OP_OBJ_LOAD,
-        Opcode.OP_OBJ_FIELD,
-        Opcode.OP_CALL,
-        Opcode.OP_IMPORT,
-        Opcode.OP_INT_TO_DBL,
-    ]:
-        args.append(unpack2(buf, ip + 1, '<Q')[0])  # unpacking 8 byte integer
-        next = [ip + 8 + 1]
+        # memory operations handling
+        elif opcode in [
+            Opcode.OP_CLEAR_M,
+            Opcode.OP_ADD_M,
+            Opcode.OP_INCR_M,
+            Opcode.OP_PUSH_M,
+            Opcode.OP_POP_M,
+            Opcode.OP_SWAPUNDEF,
+            Opcode.OP_INIT_RULE,
+            Opcode.OP_PUSH_RULE,
+            Opcode.OP_MATCH_RULE,
+            Opcode.OP_OBJ_LOAD,
+            Opcode.OP_OBJ_FIELD,
+            Opcode.OP_CALL,
+            Opcode.OP_IMPORT,
+            Opcode.OP_INT_TO_DBL,
+        ]:
+            args.append(unpack2(buf, ip + 1, '<Q')[0])  # unpacking 8 byte integer
+            next = [ip + 8 + 1]
         
-## Handling both jump location and next instruction
-    elif opcode in [Opcode.OP_JNUNDEF, Opcode.OP_JLE, Opcode.OP_JTRUE, Opcode.OP_JFALSE]:
-        next = [unpack2(buf, ip + 1, '<Q')[0], ip + 8]  
-        
-    elif opcode == Opcode.OP_PUSH:
-        arg = unpack2(buf, ip + 1, '<Q')[0]
-        try:
-            string = self.get_string(arg)
-            if string:
-                args.append(string)
-            else:
+    ## Handling both jump location and next instruction
+        elif opcode in [Opcode.OP_JNUNDEF, Opcode.OP_JLE, Opcode.OP_JTRUE, Opcode.OP_JFALSE]:
+            next = [unpack2(buf, ip + 1, '<Q')[0], ip + 8]  
+            
+        elif opcode == Opcode.OP_PUSH:
+            arg = unpack2(buf, ip + 1, '<Q')[0]
+            try:
+                string = self.get_string(arg)
+                if string:
+                    args.append(string)
+                else:
+                    args.append(arg)
+            except struct.error as exc:
                 args.append(arg)
-        except struct.error as exc:
-            args.append(arg)
-        next = [ip + 8 + 1]
-    else:
-        next = [ip + 1]
+            next = [ip + 8 + 1]
+        else:
+            next = [ip + 1]
 
-    data = dict(next=next, opcode=opcode, args=args)
-    self.code[ip] = data
+        data = dict(next=next, opcode=opcode, args=args)
+        self.code[ip] = data
         return next
         
     def get_raw_str(self, addr):
