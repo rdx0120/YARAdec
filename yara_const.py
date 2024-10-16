@@ -77,11 +77,7 @@ class Opcode(IntEnum):
     OP_LOOKUP_DICT = 43
     OP_JFALSE = 44
     OP_JTRUE = 45
-
-    OP_NEW_OPCODE_X = 46
-    OP_NEW_OPCODE_Y = 47
-
-    # Integer Opcodes
+    
     OP_INT_EQ = (OP_INT_BEGIN + _OP_EQ)
     OP_INT_NEQ = (OP_INT_BEGIN + _OP_NEQ)
     OP_INT_LT = (OP_INT_BEGIN + _OP_LT)
@@ -94,7 +90,6 @@ class Opcode(IntEnum):
     OP_INT_DIV = (OP_INT_BEGIN + _OP_DIV)
     OP_INT_MINUS = (OP_INT_BEGIN + _OP_MINUS)
 
-    # Double Opcodes
     OP_DBL_EQ = (OP_DBL_BEGIN + _OP_EQ)
     OP_DBL_NEQ = (OP_DBL_BEGIN + _OP_NEQ)
     OP_DBL_LT = (OP_DBL_BEGIN + _OP_LT)
@@ -107,7 +102,6 @@ class Opcode(IntEnum):
     OP_DBL_DIV = (OP_DBL_BEGIN + _OP_DIV)
     OP_DBL_MINUS = (OP_DBL_BEGIN + _OP_MINUS)
 
-    # New String Opcodes
     OP_STR_EQ = (OP_STR_BEGIN + _OP_EQ)
     OP_STR_NEQ = (OP_STR_BEGIN + _OP_NEQ)
     OP_STR_LT = (OP_STR_BEGIN + _OP_LT)
@@ -167,7 +161,6 @@ class StrFlag(IntFlag):
     CHAIN_TAIL = 0x4000
     FIXED_OFFSET = 0x8000
     GREEDY_REGEXP = 0x10000
-    NEW_STRING_FLAG = 0x20000
 
 
 class RuleFlag(IntFlag):
