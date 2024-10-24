@@ -5,8 +5,10 @@ from enum import IntEnum, IntFlag
 
 UNDEFINED = 0xFFFABADAFABADAFF
 
+
 def IS_UNDEFINED(X):
     return X == UNDEFINED
+
 
 _OP_EQ = 0
 _OP_NEQ = 1
@@ -77,7 +79,7 @@ class Opcode(IntEnum):
     OP_LOOKUP_DICT = 43
     OP_JFALSE = 44
     OP_JTRUE = 45
-    
+
     OP_INT_EQ = (OP_INT_BEGIN + _OP_EQ)
     OP_INT_NEQ = (OP_INT_BEGIN + _OP_NEQ)
     OP_INT_LT = (OP_INT_BEGIN + _OP_LT)
@@ -150,7 +152,7 @@ class StrFlag(IntFlag):
     ASCII = 0x08
     WIDE = 0x10
     REGEXP = 0x20
-    FAST_HEX_REGEXP = 0x40    #New
+    FAST_HEX_REGEXP = 0x40
     FULL_WORD = 0x80
     ANONYMOUS = 0x100
     SINGLE_MATCH = 0x200
