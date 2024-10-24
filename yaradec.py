@@ -292,7 +292,8 @@ class YaraDec_v11(object):
 
 decoders = {
     11: YaraDec_v11,
-    12: YaraDec_v11,  # TODO: look for changes in v12
+    12: YaraDec_v11,  
+    13: YaraDec_v11, # Assuming latest version
 }
 
 
