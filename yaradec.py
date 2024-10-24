@@ -35,7 +35,6 @@ class YaraRule(object):
         if self.data['flags'] & RuleFlag.PRIVATE:
             out += 'private '
         out += 'rule {ns}{identifier} {{\n'.format(**self.data)
-        
         if self.data.get('metadata'):
             out += '\tmeta:\n'
             for name, val in self.data['metadata'].items():
@@ -71,11 +70,6 @@ class YaraRule(object):
                 if string['flags'] & StrFlag.REGEXP:
                     out += ' regex'
                 out += '\n'
-
-        if 'externals' in self.data:
-            out += '\n externals:\n'
-            for ext_var, ext_value in self.data['externals'].items():
-                out += f'    {ext_var} = {ext_value}\n'
 
         out += '\t__yaradec_asm__:\n'
         for val in self.data.get('code', []):
@@ -135,11 +129,8 @@ class YaraDec_v11(object):
         opcode = Opcode(unpack2(buf, ip, '<B')[0])
         args = []
 
-        # halting opcode
         if opcode == Opcode.OP_HALT:
             next = []
-    
-        # memory operations handling
         elif opcode in [
             Opcode.OP_CLEAR_M,
             Opcode.OP_ADD_M,
@@ -156,13 +147,15 @@ class YaraDec_v11(object):
             Opcode.OP_IMPORT,
             Opcode.OP_INT_TO_DBL,
         ]:
-            args.append(unpack2(buf, ip + 1, '<Q')[0])  # unpacking 8 byte integer
+            args.append(unpack2(buf, ip + 1, '<Q')[0])
             next = [ip + 8 + 1]
-        
-    ## Handling both jump location and next instruction
-        elif opcode in [Opcode.OP_JNUNDEF, Opcode.OP_JLE, Opcode.OP_JTRUE, Opcode.OP_JFALSE]:
-            next = [unpack2(buf, ip + 1, '<Q')[0], ip + 8]  
-            
+        elif opcode in [
+            Opcode.OP_JNUNDEF,
+            Opcode.OP_JLE,
+            Opcode.OP_JTRUE,
+            Opcode.OP_JFALSE,
+        ]:
+            next = [unpack2(buf, ip + 1, '<Q')[0], ip + 8]
         elif opcode == Opcode.OP_PUSH:
             arg = unpack2(buf, ip + 1, '<Q')[0]
             try:
@@ -180,7 +173,7 @@ class YaraDec_v11(object):
         data = dict(next=next, opcode=opcode, args=args)
         self.code[ip] = data
         return next
-        
+
     def get_raw_str(self, addr):
         if not addr:
             return None
@@ -239,12 +232,9 @@ class YaraDec_v11(object):
             data['str'] = '{' + ' '.join(['{:X}'.format(x) for x in str_str]) + '}'
         elif flags & StrFlag.LITERAL:
             data['str'] = str_str.decode('utf-8')
-        
-        elif flags & StrFlag.REGEXP:
-            data['str'] = str_str.decode('utf-8') + ' (regex)'
         else:
             data['str'] = None
-            
+
         return data
 
     def get_rule(self, addr):
