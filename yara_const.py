@@ -124,6 +124,9 @@ class Opcode(IntEnum):
     OP_UINT16BE = (OP_READ_INT + 10)
     OP_UINT32BE = (OP_READ_INT + 11)
 
+    # Adding new opcodes for v4.x:
+    OP_NEW_OPCODE_X = (OP_STR_BEGIN + 5) # Need to replace with real value
+    OP_NEW_OPCODE_Y = (OP_INT_BEGIN + 11)
 
 def IS_INT_OP(X):
     return (X) >= Opcode.OP_INT_BEGIN and (X) <= Opcode.OP_INT_END
