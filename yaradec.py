@@ -146,6 +146,7 @@ class YaraDec_v11(object):
             Opcode.OP_CALL,
             Opcode.OP_IMPORT,
             Opcode.OP_INT_TO_DBL,
+            OP.OP_NEW_OPCODE_X,  # New
         ]:
             args.append(unpack2(buf, ip + 1, '<Q')[0])
             next = [ip + 8 + 1]
@@ -234,9 +235,14 @@ class YaraDec_v11(object):
             data['str'] = str_str.decode('utf-8')
         else:
             data['str'] = None
-
+#####################################################
+        if flags & StrFlag.WIDE:
+            data['str'] = "wide: " + str_str.decode('utf-16')  # Adjust for WIDE strings
+        elif flags & StrFlag.NO_CASE:
+            data['str'] = "nocase: " + str_str.decode('utf-8')
+######################################################
         return data
-
+    
     def get_rule(self, addr):
         fmt = '<L' + 'L' * 32 + '4xL4xL4xL4xL4xL'
         buf = self.data.getbuffer()
