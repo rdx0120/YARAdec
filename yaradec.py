@@ -299,7 +299,8 @@ class YaraDec_v11(object):
 decoders = {
     11: YaraDec_v11,
     12: YaraDec_v11,  
-    13: YaraDec_v11, # Assuming latest version
+    13: YaraDec_v11, # Adding support for latest vr.
+    14: YaraDeC_v11, # Need to be modified based on actual version used 
 }
 
 
