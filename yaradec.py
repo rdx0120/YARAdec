@@ -4,6 +4,9 @@ import sys
 from collections import OrderedDict
 from pathlib import Path
 from typing import List
+import re
+import sys
+from pathlib import Path
 
 from yara_const import Opcode, StrFlag, RuleFlag, MetaType
 
@@ -146,7 +149,6 @@ class YaraDec_v11(object):
             Opcode.OP_CALL,
             Opcode.OP_IMPORT,
             Opcode.OP_INT_TO_DBL,
-            OP.OP_NEW_OPCODE_X,  # New
         ]:
             args.append(unpack2(buf, ip + 1, '<Q')[0])
             next = [ip + 8 + 1]
@@ -235,14 +237,9 @@ class YaraDec_v11(object):
             data['str'] = str_str.decode('utf-8')
         else:
             data['str'] = None
-#####################################################
-        if flags & StrFlag.WIDE:
-            data['str'] = "wide: " + str_str.decode('utf-16')  # Adjust for WIDE strings
-        elif flags & StrFlag.NO_CASE:
-            data['str'] = "nocase: " + str_str.decode('utf-8')
-######################################################
+
         return data
-    
+
     def get_rule(self, addr):
         fmt = '<L' + 'L' * 32 + '4xL4xL4xL4xL4xL'
         buf = self.data.getbuffer()
@@ -298,35 +295,132 @@ class YaraDec_v11(object):
 
 decoders = {
     11: YaraDec_v11,
-    12: YaraDec_v11,  
-    13: YaraDec_v11, # Adding support for latest vr.
-    14: YaraDec_v11, # Need to be modified based on actual version used 
+    12: YaraDec_v11,  # TODO: look for changes in v12
 }
 
 
-def main():
+def extract_strings_from_yarac(file_path):
+    """
+    Extract printable strings from a compiled YARA rule file (.yarac)
+    
+    Args:
+        file_path (str): Path to the compiled YARA rule file
+        
+    Returns:
+        list: List of extracted strings
+    """
     try:
-        path = Path(sys.argv[1])
-    except IndexError:
+        # Read the binary file
+        with open(file_path, 'rb') as f:
+            content = f.read()
+            
+        # Convert binary content to string, replacing non-printable chars
+        text_content = content.decode('ascii', errors='ignore')
+        
+        # Regular expression for finding printable strings
+        # Matches sequences of printable characters (length >= 4)
+        string_pattern = re.compile(r'[\x20-\x7E]{4,}')
+        
+        # Extract all matches
+        strings = string_pattern.findall(text_content)
+        
+        # Filter out common false positives and duplicates
+        filtered_strings = []
+        seen = set()
+        
+        for s in strings:
+            # Skip if we've seen this string before
+            if s in seen:
+                continue
+                
+            # Skip strings that are likely not relevant
+            if any(skip in s.lower() for skip in ['http://', 'https://', '.dll', '.exe']):
+                continue
+                
+            seen.add(s)
+            filtered_strings.append(s)
+            
+        return filtered_strings
+        
+    except Exception as e:
+        print(f"Error processing file: {e}", file=sys.stderr)
+        return []
+
+def process_yara_strings(strings):
+    """
+    Process and split YARA-related strings for better analysis
+    
+    Args:
+        strings (list): List of extracted strings
+        
+    Returns:
+        dict: Categorized strings
+    """
+    categories = {
+        'yara_related': [],
+        'potential_rules': [],
+        'other_strings': []
+    }
+    
+    for s in strings:
+        # Check for YARA-specific content
+        if 'YARA' in s or 'rule' in s.lower():
+            categories['yara_related'].append(s)
+            # Split if it contains multiple parts
+            parts = re.split(r'[_\s]+', s)
+            if len(parts) > 1:
+                categories['yara_related'].extend(parts)
+        
+        # Check for potential rule names or identifiers
+        elif re.match(r'^[A-Za-z][A-Za-z0-9_]*$', s):
+            categories['potential_rules'].append(s)
+        
+        # Other strings that might be relevant
+        else:
+            categories['other_strings'].append(s)
+    
+    return categories
+
+def main():
+    if len(sys.argv) != 2:
         print("Usage: {} [path]".format(sys.argv[0]))
         sys.exit(1)
+        
+    yarac_path = sys.argv[1]
+    path = Path(sys.argv[1])
 
     stream = path.open('rb')
     header, size, version = unpack(stream, '<4sLB')
     if header != b'YARA':
         print("Invalid file (bad header)")
         sys.exit(2)
+    
+    if not Path(yarac_path).exists():
+        print(f"Error: File not found: {yarac_path}", file=sys.stderr)
+        sys.exit(1)
+        
+    print(f"Processing {yarac_path}...")
+    
+    # Extract strings
+    extracted_strings = extract_strings_from_yarac(yarac_path)
+    
+    # Process and categorize strings
+    categorized_strings = process_yara_strings(extracted_strings)
+    
+    # Print results
+   
+    for s in categorized_strings['yara_related']:
+        print(f"- {s}")
+        
+    print("\n=== Rule Name ===")
+    for s in categorized_strings['potential_rules']:
+        print(f"- {s}")
+        
+    print("\n=== Decompiling the YARA rule ===")
+    for s in categorized_strings['other_strings']:
+        print(f"- {s}")
+        
 
-    decoder = decoders.get(version)
-    if not decoder:
-        print("Invalid file (unsupported version)")
-        sys.exit(2)
 
-    dec = decoder(stream, size)
-    rules = dec.get_rules()  # type: List[YaraRule]
-    for rule in rules:
-        print(rule.get_rule())
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
