@@ -1,5 +1,5 @@
 # Use enum.py from python 3.6
-from yar_enum import IntEnum, IntFlag
+from yara_enum import IntEnum, IntFlag
 
 # Constants extracted from libyara/include/types.h   (github.com/VirusTotal/yara)
 
