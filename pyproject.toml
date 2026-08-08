@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "yaradec"
+version = "2.0.0"
+description = "Decompile compiled YARA rules (.yarc) back to source"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "Apache-2.0" }
+keywords = ["yara", "malware", "reverse-engineering", "detection-engineering"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Information Technology",
+    "Programming Language :: Python :: 3",
+    "Topic :: Security",
+]
+dependencies = []
+
+[project.optional-dependencies]
+# Only the test suite and the verification tools need real YARA.
+dev = ["pytest>=7", "yara-python>=4.3"]
+
+[project.scripts]
+yaradec = "yaradec.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/rdx0120/yaradec"
+
+[tool.setuptools.packages.find]
+include = ["yaradec*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

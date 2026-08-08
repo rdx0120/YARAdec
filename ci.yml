@@ -1,0 +1,45 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Unit tests
+        run: pytest -q
+
+      - name: Round-trip verification
+        run: python tools/roundtrip.py tests/data/*.yar
+
+  constants:
+    # Re-derives the opcode operand table from YARA's own source and diffs it.
+    # This is the check that catches a new YARA release changing the bytecode
+    # encoding, which would otherwise produce confident nonsense.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Fetch YARA source
+        run: git clone --depth 1 --branch v4.5.8 https://github.com/VirusTotal/yara.git /tmp/yara
+      - name: Check constants against YARA headers
+        run: python tools/check_constants.py /tmp/yara
