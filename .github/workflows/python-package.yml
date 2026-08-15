@@ -14,40 +14,29 @@ jobs:
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12"]
     steps:
-      - name: Checkout YARAdec
-        uses: actions/checkout@v4
-
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-
       - name: Install YARA system library
         run: |
           sudo apt-get update
           sudo apt-get install -y libyara-dev
-
       - name: Install YARAdec and test dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
-
       - name: Run unit tests
         run: pytest -q
 
   constants:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout YARAdec
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-
       - name: Clone YARA 4.5.8 source
         run: git clone --depth 1 --branch v4.5.8 https://github.com/VirusTotal/yara.git yara-src
-
       - name: Verify YARA constants
         run: python tools/check_constants.py yara-src
