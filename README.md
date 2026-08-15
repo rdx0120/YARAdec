@@ -108,18 +108,22 @@ the same rules fire on the same inputs. Recompiling only proves the output
 parses; the scan comparison proves it means the same thing.
 
 Against the full [Yara-Rules/rules](https://github.com/Yara-Rules/rules)
-corpus (465 compilable files):
+corpus (506 compilable files):
 
 | | |
 |---|---|
-| Rules parsed | 23,078 |
-| Strings parsed | 44,278 |
+| Rules parsed | 21,910 |
+| Strings parsed | 40,819 |
 | Crashes | **0** |
-| Conditions reconstructed | **23,078 / 23,078 (100%)** |
-| Files that recompile | **465 / 465** |
-| Semantic mismatches | **0** across 6,816 scan buffers |
+| Conditions reconstructed | **21,910 / 21,910 (100%)** |
+| Files that recompile | **506 / 506** |
+| Semantic mismatches | **0** across 6,872 scan buffers |
 
-Reproduce with `python tools/roundtrip.py <files>`.
+Reproduce with `python tools/validate_corpus.py /path/to/rules`. Exact counts
+vary with the corpus (it gets new commits over time) and the platform (which
+subset of rules the local YARA compiles); the invariants that always hold are
+zero crashes, zero mismatches, 100% of conditions reconstructed, and every
+file recompiling.
 
 `tools/check_constants.py` re-derives the opcode operand table from a
 checked-out YARA tree and diffs it against `yaradec/constants.py`. Operand
