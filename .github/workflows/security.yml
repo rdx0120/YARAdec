@@ -1,0 +1,24 @@
+name: security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    # The scanning pipeline is CALLED, not copied. Thresholds, actions and the
+    # weakness taxonomy live in secure-pipeline's policy.yaml and cannot be
+    # relaxed from this repository.
+    #
+    # EXPECT THIS TO FAIL ON FIRST RUN, with exit 2 and zero findings blocked.
+    # This repository declares dependencies in pyproject.toml with no lockfile,
+    # so the SCA leg resolves 0 packages and reports FAIL_NO_COVERAGE. That is
+    # the intended behaviour: an empty dependency scan is not a clean one, and
+    # the pipeline refuses to report success for a scanner that examined
+    # nothing. See docs/SECURITY-PIPELINE.md.
+    uses: rdx0120/secure-pipeline/.github/workflows/scan.yml@main

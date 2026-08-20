@@ -1,0 +1,23 @@
+# Exceptions for THIS repository only.
+#
+# Federated by design: policy.yaml is centrally governed in secure-pipeline and
+# cannot be edited from here. Suppressions live with the code they excuse.
+#
+# The trust boundary here is the opposite of a scanner-export pipeline's. This
+# project decompiles compiled YARA rule files: .yarc input is ATTACKER-CONTROLLED
+# by definition. A rationale like "not attacker-supplied in the current
+# deployment" -- reasonable in a repo that parses first-party scanner output --
+# would be false here. That is why exceptions are per-repository and bound to a
+# repository identity rather than shared.
+version: 1
+
+project: rdx0120/YARAdec
+
+# Empty on purpose. Nothing is currently suppressed.
+#
+# NOTE: an exception could not fix this repository's current red build anyway.
+# Exceptions suppress FINDINGS. The failure here is a COVERAGE failure -- the
+# dependency scanner resolved zero packages, so it examined nothing. There is
+# deliberately no mechanism to except your way out of "the scan could not see":
+# that is the one thing this pipeline exists to refuse.
+exceptions: []
