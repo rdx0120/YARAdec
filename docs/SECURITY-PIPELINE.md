@@ -13,17 +13,48 @@ findings blocked**:
 
 ```
 LEG       UNIT                      EXAMINED  OF  FLOOR  FINDINGS  STATUS
+--------  ------------------------  --------  --  -----  --------  ------
 bandit    python_files_on_disk      15        15  1      46        PASS
-gitleaks  commits                   6         6   1      0         PASS
+gitleaks  commits                   7         7   1      0         PASS
 semgrep   python_files_git_tracked  15        15  1      0         PASS
 trivy-fs  resolvable_packages       0         0   1      0         FAIL
 
-  trivy-fs: FAIL_NO_COVERAGE
-  [dependency resolution] 0 packages resolvable.
-                          Nothing resolves -- SCA is a no-op reporting success.
+  trivy-fs: FAIL_NO_COVERAGE -- runner probe: resolved packages in lockfile
+      no packages resolved from pyproject.toml. trivy needs concrete pinned
+      versions -- a lockfile -- not declared ranges
+
+CROSS-CHECKS
+  [ok] python files: on-disk vs git-tracked
+         15 on disk, 15 git-tracked. Every Python file is tracked.
+  [FAIL] dependency resolution
+         0 packages resolvable. Nothing resolves -- SCA is a no-op reporting success.
+
+VERDICT: FAIL  (failed legs: trivy-fs)
+
+POLICY GATE
+
+  blocked:     0
+  warned:      0
+  suppressed:  0 (active exceptions)
+  below floor: 46
+
+COVERAGE FAILURES -- the scan could not see
+  [trivy-fs] FAIL_NO_COVERAGE
+      runner probe: resolved packages in lockfile
+  [dependency resolution] partial coverage
+      0 packages resolvable. Nothing resolves -- SCA is a no-op reporting success.
 
 VERDICT: COVERAGE FAILURE  (exit 2)
 ```
+
+The `trivy-fs` detail names `pyproject.toml` because that is what this
+repository actually declares dependencies in. The pipeline reports the manifests
+it detected rather than assuming a `requirements.txt` — a diagnostic that names
+a file the repository does not contain is a claim the tool has not checked.
+
+The counts above are from a run at the commit this document was last updated
+against. `gitleaks commits` in particular moves with every push, so treat the
+table as a captured sample rather than a live figure.
 
 Nothing was blocked. No vulnerable dependency was found. The build is red
 because **the dependency scanner examined nothing and would have reported
