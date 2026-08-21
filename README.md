@@ -208,6 +208,28 @@ python tools/roundtrip.py tests/data/*.yar
 python tools/check_constants.py /path/to/yara
 ```
 
+### Maintainer note: no dependency lockfile (intentional)
+
+**This repository deliberately has no dependency lockfile. Please do not add
+one.**
+
+The library itself has zero runtime dependencies; only the optional `dev`
+extra pulls anything in (`pytest`, `yara-python`), and those are intentionally
+left unpinned.
+
+This repo is also consumed as a live CI subject by a separate project,
+`secure-pipeline`, which uses it to demonstrate that its security pipeline
+distinguishes a healthy repository from one with incomplete coverage.
+`YARAdec` is the deliberate "reduced coverage" case: with no lockfile, the
+software-composition-analysis step correctly reports that it cannot resolve a
+pinned dependency set. That reporting is the point of the demonstration.
+
+Adding a lockfile here would silently invalidate that demonstration by turning
+the intended negative case into a passing one, without any obvious signal that
+something broke. If you need a pinned environment for local work, create one
+outside version control (for example a `requirements.txt` you keep untracked,
+or a virtual environment) rather than committing it.
+
 ## License
 
 Apache 2.0. The original `yaradec` by jbgalet was the starting point for this
